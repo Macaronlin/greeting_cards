@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>圣诞快乐 & 生日快乐 - To 胡豆豆</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background-color: #000;
+        }
+
+        /* 背景图片层 */
+        .background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://img0.baidu.com/it/u=2238384235,1108257007&fm=253&fmt=auto&app=138&f=JPEG?w=889&h=500') no-repeat center center;
+            background-size: cover;
+            filter: brightness(0.6) blur(2px);
+            z-index: -2;
+            transition: transform 10s linear;
+        }
+
+        body:hover .background {
+            transform: scale(1.1);
+        }
+
+        /* 渐变遮罩 */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.6));
+            z-index: -1;
+        }
+
+        /* 雪花画布 */
+        #snow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* 内容容器 */
+        .container {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            color: #fff;
+            text-align: center;
+        }
+
+        /* 贺卡主体 */
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            max-width: 80%;
+            animation: fadeIn 2s ease-out;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            background: linear-gradient(45deg, #fff, #ffcfcf);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .to-name {
+            font-size: 1.8rem;
+            color: #ffcfcf;
+            margin-bottom: 2rem;
+            font-weight: bold;
+        }
+
+        .message {
+            font-size: 1.5rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .footer {
+            margin-top: 2rem;
+            font-size: 1rem;
+            opacity: 0.8;
+            font-style: italic;
+        }
+
+        /* 播放按钮 */
+        #play-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid #fff;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+
+        #play-btn:hover {
+            transform: scale(1.1);
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        .music-icon {
+            width: 24px;
+            height: 24px;
+            fill: #fff;
+        }
+
+        .rotating {
+            animation: rotate 3s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 适配移动端 */
+        @media (max-width: 600px) {
+            h1 { font-size: 2rem; }
+            .message { font-size: 1.1rem; }
+            .card { padding: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="background"></div>
+    <div class="overlay"></div>
+    <canvas id="snow"></canvas>
+
+    <div class="container">
+        <div class="card">
+            <div class="to-name">To: 胡豆豆</div>
+            <h1>Merry Christmas <br>&<br> Happy Birthday</h1>
+            <div class="message">
+                <p>在这个双重喜庆的日子里</p>
+                <p>愿你的生活像陈奕迅的歌声一样</p>
+                <p>温柔而有力量，深情且动人</p>
+                <p>生日和圣诞节都快乐！</p>
+            </div>
+            <div class="footer">—— 背景音乐：陈奕迅《圣诞结》</div>
+        </div>
+    </div>
+
+    <!-- 播放器 -->
+    <audio id="bg-music" loop>
+        <source src="http://music.163.com/song/media/outer/url?id=64317.mp3" type="audio/mpeg">
+    </audio>
+
+    <div id="play-btn">
+        <svg class="music-icon" viewBox="0 0 24 24">
+            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+        </svg>
+    </div>
+
+    <script>
+        // 雪花效果
+        const canvas = document.getElementById('snow');
+        const ctx = canvas.getContext('2d');
+        let width, height, snowflakes;
+
+        function initSnow() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+            snowflakes = [];
+            for (let i = 0; i < 150; i++) {
+                snowflakes.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    r: Math.random() * 4 + 1,
+                    d: Math.random() * 1,
+                    v: Math.random() * 2 + 1
+                });
+            }
+        }
+
+        function drawSnow() {
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.beginPath();
+            for (let i = 0; i < snowflakes.length; i++) {
+                let p = snowflakes[i];
+                ctx.moveTo(p.x, p.y);
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2, true);
+            }
+            ctx.fill();
+            updateSnow();
+        }
+
+        function updateSnow() {
+            for (let i = 0; i < snowflakes.length; i++) {
+                let p = snowflakes[i];
+                p.y += p.v;
+                p.x += Math.sin(p.y / 50) * 0.5;
+                if (p.y > height) {
+                    snowflakes[i] = { x: Math.random() * width, y: -10, r: p.r, d: p.d, v: p.v };
+                }
+            }
+        }
+
+        function anim() {
+            drawSnow();
+            requestAnimationFrame(anim);
+        }
+
+        window.addEventListener('resize', initSnow);
+        initSnow();
+        anim();
+
+        // 音乐控制
+        const music = document.getElementById('bg-music');
+        const playBtn = document.getElementById('play-btn');
+        let isPlaying = false;
+
+        playBtn.addEventListener('click', () => {
+            if (isPlaying) {
+                music.pause();
+                playBtn.classList.remove('rotating');
+            } else {
+                music.play().catch(err => {
+                    console.log("Autoplay blocked or link issue:", err);
+                    alert("请检查网络或点击页面重试播放音乐");
+                });
+                playBtn.classList.add('rotating');
+            }
+            isPlaying = !isPlaying;
+        });
+
+        // 尝试自动播放（现代浏览器通常需要交互）
+        document.addEventListener('click', () => {
+            if (!isPlaying) {
+                music.play().then(() => {
+                    isPlaying = true;
+                    playBtn.classList.add('rotating');
+                }).catch(() => {});
+            }
+        }, { once: true });
+    </script>
+</body>
+</html>
+
