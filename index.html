@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>圣诞快乐 & 生日快乐 - To 胡豆豆</title>
     <style>
+        :root {
+            --primary-red: #c41e3a;
+            --gold: #ffd700;
+        }
+
         body, html {
             margin: 0;
             padding: 0;
@@ -12,7 +17,7 @@
             height: 100%;
             overflow: hidden;
             font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
-            background-color: #000;
+            background-color: #050505;
         }
 
         /* 背景图片层 */
@@ -24,13 +29,13 @@
             height: 100%;
             background: url('https://img0.baidu.com/it/u=2238384235,1108257007&fm=253&fmt=auto&app=138&f=JPEG?w=889&h=500') no-repeat center center;
             background-size: cover;
-            filter: brightness(0.6) blur(2px);
+            filter: brightness(0.5) blur(3px);
             z-index: -2;
-            transition: transform 10s linear;
+            transition: transform 15s ease-out;
         }
 
-        body:hover .background {
-            transform: scale(1.1);
+        .show-card .background {
+            transform: scale(1.15);
         }
 
         /* 渐变遮罩 */
@@ -40,7 +45,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.6));
+            background: radial-gradient(circle, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.7) 100%);
             z-index: -1;
         }
 
@@ -52,7 +57,44 @@
             width: 100%;
             height: 100%;
             pointer-events: none;
-            z-index: 0;
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 2s ease;
+        }
+
+        .show-card #snow {
+            opacity: 1;
+        }
+
+        /* 初始礼物盒界面 */
+        #gift-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0a0a0a;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            cursor: pointer;
+            transition: opacity 1s ease, visibility 1s;
+        }
+
+        .gift-box {
+            font-size: 80px;
+            animation: bounce 2s infinite;
+            filter: drop-shadow(0 0 15px var(--primary-red));
+        }
+
+        .click-hint {
+            color: #fff;
+            margin-top: 20px;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            animation: pulse 1.5s infinite;
         }
 
         /* 内容容器 */
@@ -66,80 +108,139 @@
             height: 100%;
             color: #fff;
             text-align: center;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 2s ease 0.5s;
+        }
+
+        .show-card .container {
+            visibility: visible;
+            opacity: 1;
         }
 
         /* 贺卡主体 */
         .card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 3rem;
-            border-radius: 20px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-            max-width: 80%;
-            animation: fadeIn 2s ease-out;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 4rem;
+            border-radius: 30px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.5);
+            max-width: 85%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: rotate(45deg);
+            animation: shine 6s infinite;
         }
 
         h1 {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-            background: linear-gradient(45deg, #fff, #ffcfcf);
+            font-size: 3.5rem;
+            margin: 1rem 0;
+            font-family: 'Georgia', serif;
+            background: linear-gradient(to right, #fff, #ffd700, #fff);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
         }
 
         .to-name {
-            font-size: 1.8rem;
+            font-size: 2rem;
             color: #ffcfcf;
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem;
             font-weight: bold;
+            display: inline-block;
+            border-bottom: 2px solid var(--primary-red);
+            padding-bottom: 5px;
         }
 
         .message {
-            font-size: 1.5rem;
-            line-height: 1.6;
+            font-size: 1.6rem;
+            line-height: 1.8;
             margin-bottom: 2rem;
+            min-height: 150px;
+        }
+
+        .message p {
+            margin: 10px 0;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.8s ease;
+        }
+
+        .message p.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
 
         .footer {
-            margin-top: 2rem;
-            font-size: 1rem;
-            opacity: 0.8;
-            font-style: italic;
+            margin-top: 3rem;
+            font-size: 0.9rem;
+            opacity: 0.6;
+            letter-spacing: 1px;
         }
 
-        /* 播放按钮 */
+        /* 音乐控制 */
         #play-btn {
             position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 50px;
-            height: 50px;
-            background: rgba(255, 255, 255, 0.2);
-            border: 2px solid #fff;
+            bottom: 40px;
+            right: 40px;
+            width: 55px;
+            height: 55px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
             cursor: pointer;
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 100;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0;
+        }
+
+        .show-card #play-btn {
+            opacity: 1;
         }
 
         #play-btn:hover {
-            transform: scale(1.1);
-            background: rgba(255, 255, 255, 0.4);
+            transform: scale(1.1) rotate(15deg);
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #fff;
         }
 
         .music-icon {
-            width: 24px;
-            height: 24px;
+            width: 26px;
+            height: 26px;
             fill: #fff;
         }
 
         .rotating {
-            animation: rotate 3s linear infinite;
+            animation: rotate 4s linear infinite;
+        }
+
+        /* 动画关键帧 */
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-20px);}
+            60% {transform: translateY(-10px);}
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.05); }
+            100% { opacity: 0.5; transform: scale(1); }
         }
 
         @keyframes rotate {
@@ -147,20 +248,27 @@
             to { transform: rotate(360deg); }
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        @keyframes shine {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
         }
 
-        /* 适配移动端 */
-        @media (max-width: 600px) {
-            h1 { font-size: 2rem; }
-            .message { font-size: 1.1rem; }
-            .card { padding: 1.5rem; }
+        /* 响应式 */
+        @media (max-width: 768px) {
+            h1 { font-size: 2.2rem; }
+            .message { font-size: 1.2rem; }
+            .card { padding: 2rem; width: 85%; }
+            .to-name { font-size: 1.5rem; }
         }
     </style>
 </head>
-<body>
+<body class="loading">
+
+    <!-- 礼物开启遮罩 -->
+    <div id="gift-overlay" onclick="openGift()">
+        <div class="gift-box">🎁</div>
+        <div class="click-hint">胡豆豆，点击拆开你的惊喜</div>
+    </div>
 
     <div class="background"></div>
     <div class="overlay"></div>
@@ -170,28 +278,73 @@
         <div class="card">
             <div class="to-name">To: 胡豆豆</div>
             <h1>Merry Christmas <br>&<br> Happy Birthday</h1>
-            <div class="message">
-                <p>在这个双重喜庆的日子里</p>
-                <p>愿你的生活像陈奕迅的歌声一样</p>
-                <p>温柔而有力量，深情且动人</p>
-                <p>生日和圣诞节都快乐！</p>
+            <div class="message" id="message-container">
+                <p>在这个特别的双重节日里</p>
+                <p>愿陈奕迅的深情旋律伴你左右</p>
+                <p>愿你的生活，如冬日暖阳般明媚</p>
+                <p>生日、圣诞，都要快乐呀！</p>
             </div>
-            <div class="footer">—— 背景音乐：陈奕迅《圣诞结》</div>
+            <div class="footer">♫ 陈奕迅 - 《圣诞结》</div>
         </div>
     </div>
 
-    <!-- 播放器 -->
+    <!-- 播放器 - 使用本地 mp3 -->
     <audio id="bg-music" loop>
-        <source src="http://music.163.com/song/media/outer/url?id=64317.mp3" type="audio/mpeg">
+        <source src="shengdanjie.mp3" type="audio/mpeg">
     </audio>
 
-    <div id="play-btn">
+    <div id="play-btn" onclick="toggleMusic()">
         <svg class="music-icon" viewBox="0 0 24 24">
             <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
         </svg>
     </div>
 
     <script>
+        const music = document.getElementById('bg-music');
+        const playBtn = document.getElementById('play-btn');
+        let isPlaying = false;
+
+        // 开启贺卡
+        function openGift() {
+            const overlay = document.getElementById('gift-overlay');
+            overlay.style.opacity = '0';
+            setTimeout(() => {
+                overlay.style.visibility = 'hidden';
+                document.body.classList.add('show-card');
+                
+                // 开始播放音乐
+                music.play().then(() => {
+                    isPlaying = true;
+                    playBtn.classList.add('rotating');
+                }).catch(e => console.log("Audio play failed:", e));
+
+                // 触发打字机/显示效果
+                showMessages();
+            }, 1000);
+        }
+
+        // 音乐控制
+        function toggleMusic() {
+            if (isPlaying) {
+                music.pause();
+                playBtn.classList.remove('rotating');
+            } else {
+                music.play();
+                playBtn.classList.add('rotating');
+            }
+            isPlaying = !isPlaying;
+        }
+
+        // 逐条显示祝福语
+        function showMessages() {
+            const ps = document.querySelectorAll('.message p');
+            ps.forEach((p, index) => {
+                setTimeout(() => {
+                    p.classList.add('visible');
+                }, 800 * (index + 1));
+            });
+        }
+
         // 雪花效果
         const canvas = document.getElementById('snow');
         const ctx = canvas.getContext('2d');
@@ -207,16 +360,15 @@
                 snowflakes.push({
                     x: Math.random() * width,
                     y: Math.random() * height,
-                    r: Math.random() * 4 + 1,
-                    d: Math.random() * 1,
-                    v: Math.random() * 2 + 1
+                    r: Math.random() * 3 + 1,
+                    v: Math.random() * 1.5 + 0.5
                 });
             }
         }
 
         function drawSnow() {
             ctx.clearRect(0, 0, width, height);
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
             ctx.beginPath();
             for (let i = 0; i < snowflakes.length; i++) {
                 let p = snowflakes[i];
@@ -233,7 +385,8 @@
                 p.y += p.v;
                 p.x += Math.sin(p.y / 50) * 0.5;
                 if (p.y > height) {
-                    snowflakes[i] = { x: Math.random() * width, y: -10, r: p.r, d: p.d, v: p.v };
+                    p.y = -10;
+                    p.x = Math.random() * width;
                 }
             }
         }
@@ -246,36 +399,6 @@
         window.addEventListener('resize', initSnow);
         initSnow();
         anim();
-
-        // 音乐控制
-        const music = document.getElementById('bg-music');
-        const playBtn = document.getElementById('play-btn');
-        let isPlaying = false;
-
-        playBtn.addEventListener('click', () => {
-            if (isPlaying) {
-                music.pause();
-                playBtn.classList.remove('rotating');
-            } else {
-                music.play().catch(err => {
-                    console.log("Autoplay blocked or link issue:", err);
-                    alert("请检查网络或点击页面重试播放音乐");
-                });
-                playBtn.classList.add('rotating');
-            }
-            isPlaying = !isPlaying;
-        });
-
-        // 尝试自动播放（现代浏览器通常需要交互）
-        document.addEventListener('click', () => {
-            if (!isPlaying) {
-                music.play().then(() => {
-                    isPlaying = true;
-                    playBtn.classList.add('rotating');
-                }).catch(() => {});
-            }
-        }, { once: true });
     </script>
 </body>
 </html>
-
