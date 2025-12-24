@@ -267,7 +267,7 @@
     <!-- 礼物开启遮罩 -->
     <div id="gift-overlay" onclick="openGift()">
         <div class="gift-box">🎁</div>
-        <div class="click-hint">胡豆豆，点击拆开你的惊喜</div>
+        <div class="click-hint">点击拆开！</div>
     </div>
 
     <div class="background"></div>
@@ -289,7 +289,7 @@
     </div>
 
     <!-- 播放器 - 使用本地 mp3 -->
-    <audio id="bg-music" loop>
+    <audio id="bg-music" loop autoplay>
         <source src="shengdanjie.mp3" type="audio/mpeg">
     </audio>
 
@@ -312,16 +312,39 @@
                 overlay.style.visibility = 'hidden';
                 document.body.classList.add('show-card');
                 
-                // 开始播放音乐
-                music.play().then(() => {
-                    isPlaying = true;
-                    playBtn.classList.add('rotating');
-                }).catch(e => console.log("Audio play failed:", e));
+                // 开始播放音乐（自动播放）
+                music.volume = 0.7; // 设置音量
+                const playPromise = music.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isPlaying = true;
+                        playBtn.classList.add('rotating');
+                    }).catch(error => {
+                        // 如果自动播放失败，尝试用户交互后播放
+                        console.log("自动播放被阻止，等待用户交互:", error);
+                        // 添加点击事件监听，确保用户交互后能播放
+                        document.addEventListener('click', function playOnClick() {
+                            music.play().then(() => {
+                                isPlaying = true;
+                                playBtn.classList.add('rotating');
+                            });
+                            document.removeEventListener('click', playOnClick);
+                        }, { once: true });
+                    });
+                }
 
                 // 触发打字机/显示效果
                 showMessages();
             }, 1000);
         }
+
+        // 页面加载时尝试预加载音频
+        window.addEventListener('load', () => {
+            music.load();
+            // 尝试静音自动播放（某些浏览器允许）
+            music.muted = false;
+        });
 
         // 音乐控制
         function toggleMusic() {
